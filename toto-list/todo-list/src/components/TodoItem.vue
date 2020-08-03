@@ -5,25 +5,47 @@
   >
     <li
       v-for="(item, index) in listTodosFilter"
-      class="todo-list-item d-flex mt-3"
+      class="todo-list-item mt-3"
       :key="index"
-      :class="{ 'item-deleted' : item.isCompleted }"
+      :class="{ 'item-deleted' : item.isCompleted, editting: item == editTodo}"
     >
-      <img
-        src="../assets/img/uncheck.svg"
-        alt="#"
-        class="icon-size mr-3 icon-state-item"
-        @click="handleDoneItem(index)"
-      >
-      <div class="d-flex justify-content-between align-items-center">
-        <p class="m-0 text-break w-100">{{ item.name }}</p>
+      <div class="view">
         <img
-          src="../assets/img/untick.png"
-          alt="/Todo-List/static/media/uncheck.40eb9cc6.svg"
-          class="icon-size btn-delete-item mr-3"
-          @click="handleRemoveItem(index)"
+          src="../assets/img/uncheck.svg"
+          alt="uncheck"
+          class="icon-size mr-3 icon-state-item"
+          @click="handleDoneItem(index)"
         >
+        <div class="d-flex justify-content-between align-items-center">
+          <p
+            ref="item"
+            class="m-0 text-break w-100"
+          >{{ item.name }}</p>
+          <div class="item-action">
+            <img
+              src="../assets/img/edit.svg"
+              alt="edit"
+              class="icon-size btn-delete-item mr-3"
+              @click="handleEditItem(item)"
+            >
+            <img
+              src="../assets/img/untick.png"
+              alt="delete"
+              class="icon-size btn-delete-item mr-3"
+              @click="handleRemoveItem(index)"
+            >
+          </div>
+        </div>
       </div>
+      <input
+        type="text"
+        class="edit w-100"
+        v-model="item.name"
+        @blur="handleDoneEdit(item)"
+        @keyup.enter="handleDoneEdit(item)"
+        @keyup.esc="handleCancelEdit(item)"
+        v-focus="item == editTodo"
+      >
     </li>
   </ul>
   <h3
@@ -45,9 +67,17 @@ export default {
     filters: {
       type: Array,
       default: () => []
+    },
+    editTodo: {
+      type: Object,
+      default: null
     }
   },
   methods: {
+    handleEditItem (item) {
+      this.beforeEditCache = item.name
+      this.$emit('edit:item', item)
+    },
     handleRemoveItem (index) {
       this.$emit('remove:item', {
         index: index
@@ -57,6 +87,14 @@ export default {
       this.$emit('done:item', {
         index: index
       })
+    },
+    handleDoneEdit (item) {
+      this.beforeEditCache = null
+      this.$emit('edit:item', null)
+    },
+    handleCancelEdit (item) {
+      item.name = this.beforeEditCache
+      this.$emit('edit:item', null)
     }
   },
   computed: {
@@ -72,6 +110,13 @@ export default {
       }
       return listTodosFilter
     }
+  },
+  directives: {
+    'focus': function (el, binding) {
+      if (binding.value) {
+        el.focus()
+      }
+    }
   }
 }
 </script>
@@ -83,21 +128,25 @@ export default {
   list-style: none;
 }
 
-.btn-delete-item {
+.item-action {
   display: none;
 }
 
-.todo-list-item:hover > div > .btn-delete-item {
+.todo-list-item:hover > .view > div > .item-action {
   display: block;
   animation: fadeIn 0.5s ease;
   cursor: pointer;
 }
 
-.todo-list-item > div {
+.todo-list-item > .view {
+  display: flex;
+}
+
+.todo-list-item > .view > div {
   width: calc(100% - 32px - 1rem);
 }
 
-.btn-delete-item {
+.item-action {
   position: absolute;
   right: 0;
 }
@@ -118,6 +167,17 @@ export default {
 .item-deleted > div > p {
   text-decoration: line-through;
   opacity: 0.5;
+}
+.todo-list-item.editting > .view {
+  display: none;
+}
+
+.todo-list-item > .edit {
+  display: none;
+}
+
+.todo-list-item.editting > .edit {
+  display: block;
 }
 
 @keyframes fadeIn {

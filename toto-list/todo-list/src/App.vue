@@ -16,6 +16,8 @@
             @remove:item="handleRemoveItem"
             @done:item="handleDoneItem"
             :filters="filters"
+            :editTodo="editTodo"
+            @edit:item="handleEditItem"
           />
           <Footer
             :listTodos="listTodos"
@@ -36,7 +38,13 @@ export default {
   name: 'App',
   data () {
     return {
-      listTodos: [],
+      editTodo: null,
+      listTodos: [
+        {
+          isCompleted: false,
+          name: 'a'
+        }
+      ],
       filters: [
         { 'type': 'All', isActive: true },
         { 'type': 'Active', isActive: false },
@@ -72,6 +80,9 @@ export default {
           return item
         }
       )
+    },
+    handleEditItem (data) {
+      this.editTodo = data
     }
   },
   computed: {

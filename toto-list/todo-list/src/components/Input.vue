@@ -7,7 +7,7 @@
       @click="handleTickAll()"
     >
     <input
-      class="border-bottom border-0"
+      class="border-bottom border-0 todo-add-item"
       type="text"
       name="todo"
       placeholder="What need to be done?"
@@ -53,7 +53,7 @@ export default {
 </script>
 
 <style>
-input {
+.todo-add-item {
   width: calc(100%);
   border: 0;
   padding: 0 10px;
