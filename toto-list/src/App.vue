@@ -39,12 +39,7 @@ export default {
   data () {
     return {
       editTodo: null,
-      listTodos: [
-        {
-          isCompleted: false,
-          name: 'a'
-        }
-      ],
+      listTodos: [],
       filters: [
         { 'type': 'All', isActive: true },
         { 'type': 'Active', isActive: false },
