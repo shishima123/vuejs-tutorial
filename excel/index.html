@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Tool Generate Batch</title>
+    <link rel="shortcut icon" type="image/png" href="./favicon.ico" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        .inputfile {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+
+        .inputfile+label {
+            font-size: 1.25em;
+            font-weight: 700;
+            color: white;
+            background-color: #1976d2;
+            display: inline-block;
+            cursor: pointer;
+            width: 140px;
+            height: 40px;
+            border-radius: 5px;
+        }
+
+        .inputfile:hover+label,
+        .inputfile+label:hover {
+            background-color: #c62828;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+    <script>
+        var ExcelToJSON = function () {
+            this.parseExcel = function (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var data = e.target.result;
+                    var workbook = XLSX.read(data, {
+                        type: "binary"
+                    });
+                    var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    // Here is your object
+                    var sheetMapping = XLSX.utils.sheet_to_row_object_array(
+                        workbook.Sheets[workbook.SheetNames[0]]
+                    );
+
+                    var mappingToJson = JSON.stringify(sheetMapping);
+                    var parse_json_mapping = JSON.parse(mappingToJson);
+                    console.log(mappingToJson)
+                    var columns = ['category_id', 'category_name', 'parent_cateogory_id'];
+                    var table = 'mst_disabilities_employment_report_categories'
+
+                    var renderArray = '';
+                    var itemArray = '';
+                    parse_json_mapping.forEach((element) => {
+                        columns.forEach((column, idx, array) => {
+                            var lastBreak = ",\n";
+                            if (idx === array.length - 1) {
+                                lastBreak = ","
+                            }
+                            itemArray += "'" + column + "' => " + (isNaN(element[column]) ? "'" + element[column] + "'" : element[column]) + lastBreak
+                        });
+
+                        renderArray += `[
+                            ${itemArray}
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ],`
+                        itemArray = '';
+                    });
+
+                    var template = `
+            $now = Carbon::now();
+            DB::table('${table}')->insert([
+                ${renderArray}
+            ]);`
+                    $("#xlx_json").val(template);
+
+                }
+                $('#upload').val('');
+
+                reader.onerror = function (ex) {
+                    console.log(ex);
+                };
+
+                reader.readAsBinaryString(file);
+            };
+
+        };
+
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+            var xl2json = new ExcelToJSON();
+            xl2json.parseExcel(files[0]);
+        }
+    </script>
+
+</head>
+
+<body style="background-color: #EEEEEE;">
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-12 p-0">
+                <div class="shadow p-2 bg-white rounded" style="
+    border: 1px solid #ced4da;">
+                    <div>
+                        <div class=" form-group">
+                            <form enctype="multipart/form-data" class="mt-5 text-center">
+                                <input id="upload" type="file" class="inputfile" />
+                                <label for="upload">
+                                    <p class="m-0 h-100 d-flex align-items-center justify-content-center shadow">Choose
+                                        a file
+                                    </p>
+                                </label>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class=" col-12">
+                <textarea class="form-control shadow" rows="33" cols="120" id="xlx_json"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document
+            .getElementById("upload")
+            .addEventListener("change", handleFileSelect, false);
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
