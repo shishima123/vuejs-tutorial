@@ -1,7 +1,7 @@
 <template>
   <div>
         <div class="form-group">
-            <router-link :to="{name: 'createCompany'}" class="btn btn-success">Create new company</router-link>
+            <a href="#" class="btn btn-success">Create new company</a>
         </div>
 
         <div class="panel panel-default">
@@ -14,22 +14,21 @@
                         <th>Address</th>
                         <th>Website</th>
                         <th>Email</th>
-                        <th width="100">&nbsp;</th>
+                        <th>&nbsp;</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="company, index in companies">
+                    <tr v-for="(company, index) in listCompanies" :key="index">
                         <td>{{ company.name }}</td>
                         <td>{{ company.address }}</td>
                         <td>{{ company.website }}</td>
                         <td>{{ company.email }}</td>
-                        <td>
-                            <router-link :to="{name: 'editCompany', params: {id: company.id}}" class="btn btn-xs btn-default">
+                        <td class="text-center">
+                            <a href="#"  class="btn btn-warning">
                                 Edit
-                            </router-link>
+                            </a>
                             <a href="#"
-                               class="btn btn-xs btn-danger"
-                               v-on:click="deleteEntry(company.id, index)">
+                               class="btn btn-danger">
                                 Delete
                             </a>
                         </td>
@@ -42,8 +41,9 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
-
+  computed: mapState(['listCompanies'])
 }
 </script>
 
